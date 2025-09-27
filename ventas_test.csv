@@ -1,0 +1,11 @@
+id_products,date_invoices,codigo_producto,nombre_producto,categoria,cantidad_vendida,precio,stock,promocion_activa,bodega_id,fecha_vencimiento
+14,2025-06-10,7401003300125,Helado Dos Pinos 1L,Lácteos,42,3900,65,1,1,2025-07-01
+40,2025-11-29,7401005900988,Manzanas Rojas Kg,Frutas,35,2200,55,0,2,2025-12-15
+31,2025-10-20,7401005000985,Shampoo Pantene 400ml,Higiene,22,4300,60,0,2,2027-05-01
+46,2025-12-18,7401006500988,Televisor Samsung 50 pulgadas,Electrónica,18,215000,20,1,1,2028-01-01
+18,2025-07-06,7401003700128,Salchichón Monteverde 500g,Carnes,18,2500,40,0,1,2025-07-20
+49,2025-12-24,7401006800118,Pan Bimbo Integral 500g,Panadería,55,1350,100,1,2,2026-01-01
+27,2025-10-01,7401004600125,Chocolate Hershey's 40g,Golosinas,75,950,220,1,1,2025-12-01
+26,2025-09-20,7401004500988,Arroz Tío Pelón 2kg,Abarrotes,32,2200,85,0,1,2026-01-01
+33,2025-11-05,7401005200011,Arroz Tío Pelón 2kg,Abarrotes,60,2200,95,1,1,2026-01-01
+20,2025-08-01,7401003900988,Manzanas Rojas Kg,Frutas,25,2200,50,0,2,2025-08-15
