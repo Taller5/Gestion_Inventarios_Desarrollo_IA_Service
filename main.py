@@ -5,9 +5,30 @@ from pydantic import BaseModel
 import datetime
 import os
 import numpy as np
+from fastapi.middleware.cors import CORSMiddleware # 1. Importar el middleware
+
 
 # --- 1. Configuración Inicial y Carga del Modelo ---
 app = FastAPI(title="API de Predicción de Ventas de Supermercado")
+
+# 2. Definir los orígenes permitidos
+# Permitimos localhost:5173 (tu frontend) y 127.0.0.1:8001 (FastAPI/Swagger)
+origins = [
+    "http://localhost:5173",  
+    "http://127.0.0.1:5173",  
+    "http://localhost:8001",
+    "http://127.0.0.1:8001",
+]
+
+# 3. Aplicar el Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,          # Lista de orígenes permitidos
+    allow_credentials=True,         # Permite cookies/headers de autenticación
+    allow_methods=["*"],            # Permite todos los métodos (GET, POST, etc.)
+    allow_headers=["*"],            # Permite todos los encabezados
+)
+
 
 MODEL_PATH = "modelo/modelo_ventas.joblib"
 MODELO_VENTAS = None
@@ -22,7 +43,7 @@ else:
 # Hemos añadido el campo 'promocion_activa' y ajustado el nombre de la fecha
 class PrediccionInput(BaseModel):
     id_products: int
-    fecha_prediccion: str  # Formato YYYY-MM-DD
+    fecha_prediccion: datetime.date  # Formato YYYY-MM-DD
     precio_de_venta_esperado: float # Ahora es obligatorio
     promocion_activa: int # 0 o 1, obligatorio ya que el modelo fue entrenado con él
     
@@ -47,10 +68,7 @@ def predecir_cantidad_vendida(data: PrediccionInput):
             'dia_semana': [fecha.dayofweek],
             'mes': [fecha.month],
             'trimestre': [fecha.quarter],
-            # ¡SOLUCIÓN!: Usamos el dato de entrada, pero lo nombramos EXACTAMENTE
-            # como lo espera el modelo entrenado: 'precio_promedio_diario'
             'precio_promedio_diario': [data.precio_de_venta_esperado],
-            # Necesitas la columna 'promocion_activa' si la usaste en el entrenamiento
             'promocion_activa': [data.promocion_activa], 
         })
         

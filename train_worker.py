@@ -11,11 +11,10 @@ from typing import Optional # Para mejor tipado
 # ----------------------------------------------------
 # 1. CONFIGURACIÓN DE LA BASE DE DATOS
 # ----------------------------------------------------
-#  ¡REEMPLAZA ESTOS VALORES CON TUS CREDENCIALES REALES! 
 DB_USER = "root"
 DB_PASSWORD = ""
-DB_HOST = "127.0.0.1"       # Ejemplo: "localhost" o la IP del servidor
-DB_PORT = "3306"            # Puerto estándar de MySQL
+DB_HOST = "127.0.0.1"      
+DB_PORT = "3306"            
 DB_NAME = "gestion-inventarios-desarrollo-back"
 
 DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
@@ -99,21 +98,14 @@ def obtener_datos_planos_de_db() -> pd.DataFrame:
         print(f"❌ ERROR al conectar o consultar la DB: {e}")
         # En caso de error, puedes optar por cargar el CSV de simulación si existe
         # para probar la lógica sin la DB. (Descomenta las líneas de abajo para la simulación)
-        # try:
-        #     df_sim = pd.read_csv("dataset/ventas_supermercado.csv", encoding="utf-8")
-        #     df_sim['date_invoices'] = pd.to_datetime(df_sim['date_invoices'])
-        #     print("Usando datos de simulación por error de DB.")
-        #     return df_sim
-        # except FileNotFoundError:
-        #     return pd.DataFrame()
-        return pd.DataFrame() # Retorna vacío si falla
-
-
-
-    # En un entorno real, usarías SQL Alchemy y la consulta JSON_TABLE.
-    # engine = create_engine("mysql+pymysql://user:pass@host:port/dbname")
-    # query = "SELECT i.date_invoices, ... [LA CONSULTA JSON_TABLE COMPLETA]"
-    # df = pd.read_sql(query, engine)
+        try:
+             df_sim = pd.read_csv("dataset/ventas_supermercado.csv", encoding="utf-8")
+             df_sim['date_invoices'] = pd.to_datetime(df_sim['date_invoices'])
+             print("Usando datos de simulación por error de DB.")
+             return df_sim
+        except FileNotFoundError:
+             return pd.DataFrame()
+        # return pd.DataFrame() # Retorna vacío si falla
     
 
 # --- 2. FUNCIÓN PRINCIPAL DE ENTRENAMIENTO (Para generar el modelo .joblib) ---

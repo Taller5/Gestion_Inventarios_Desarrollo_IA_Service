@@ -1,0 +1,31 @@
+Microservicio Python (Flask/FastAPI)
+
+
+
+
+------comando para levantar el entorno virtual------
+venv\Scripts\activate
+
+
+------instalación de las librerías para el API de servicio de IA-------
+pip install fastapi uvicorn scikit-learn numpy pandas
+
+esto crea las librerías de fastAPI para crear el api en python, uvicorn que sirve para ejecutar la api, scickit-learn que sirve para hacer machine learning(entrenar a la ia) y numpy y pandas que sirve para manejar y analizar los datos que le vamos a dar.
+
+
+------comando para guardar las dependencias----
+pip freeze > requirements.txt
+
+
+------comando para ejecutar la API (ejecuta el archivo main)-------
+
+uvicorn main:app --reload --port 8001  //correrlo en ese puerto para que no choque con el puerto de laravel 
+
+
+main-> nombre del archivo
+app-> nombre de la instancia de FastAPI
+--reload-> reinicia/actualiza automáticamente el servidor cuando detecta cambios
+
+
+------comando para instalar las librerías de Python para conectarse con la BD
+pip install sqlalchemy pymysql pandas
