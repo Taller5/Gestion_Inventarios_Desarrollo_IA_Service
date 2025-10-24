@@ -26,87 +26,97 @@ def obtener_datos_planos_de_db() -> pd.DataFrame:
     """
     print("Conectando a la base de datos y ejecutando consulta...")
     
-    try:
-        # Crea el motor de conexión
-        engine = create_engine(DATABASE_URL)
+    # try:
+    #     # Crea el motor de conexión
+    #     # engine = create_engine(DATABASE_URL)
         
-        # Define la consulta SQL para obtener los datos históricos necesarios.
-        # ASEGÚRATE de que los nombres de las columnas coincidan exactamente.
-        query = """
-        SELECT 
-            -- 1. Fecha de la factura
-            i.date AS date_invoices,
+    #     # Define la consulta SQL para obtener los datos históricos necesarios.
+    #     # ASEGÚRATE de que los nombres de las columnas coincidan exactamente.
+    #     query = """
+    #     SELECT 
+    #         -- 1. Fecha de la factura
+    #         i.date AS date_invoices,
             
-            -- 2. El ID del producto (el campo 'id' de la tabla products)
-            p.id AS id_products, 
+    #         -- 2. El ID del producto (el campo 'id' de la tabla products)
+    #         p.id AS id_products, 
             
-            -- 3. Campos extraídos y transformados del JSON
-            p_data.quantity AS cantidad_vendida,
+    #         -- 3. Campos extraídos y transformados del JSON
+    #         p_data.quantity AS cantidad_vendida,
             
-            -- Lógica para convertir el descuento (discount > 0 significa promoción activa = 1)
-            CASE 
-                WHEN p_data.discount > 0 THEN 1 
-                ELSE 0 
-            END AS promocion_activa,
+    #         -- Lógica para convertir el descuento (discount > 0 significa promoción activa = 1)
+    #         CASE 
+    #             WHEN p_data.discount > 0 THEN 1 
+    #             ELSE 0 
+    #         END AS promocion_activa,
             
-            -- Precio unitario de la venta
-            p_data.price
+    #         -- Precio unitario de la venta
+    #         p_data.price
             
-        FROM 
-            -- Tabla de facturas principal
-            invoices i
+    #     FROM 
+    #         -- Tabla de facturas principal
+    #         invoices i
             
-            -- 1. Utiliza JSON_TABLE para aplanar el array JSON 'products'
-            JOIN JSON_TABLE(
-                i.products, 
-                '$[*]' 
-                COLUMNS (
-                    -- Extrae el código (el campo de enlace)
-                    product_code_json VARCHAR(50) PATH '$.code', 
-                    -- Extrae la cantidad vendida
-                    quantity INT PATH '$.quantity',
-                    -- Extrae el valor del descuento
-                    discount INT PATH '$.discount',
-                    -- Extrae el precio
-                    price DECIMAL(10, 2) PATH '$.price'
-                )
-            ) AS p_data
+    #         -- 1. Utiliza JSON_TABLE para aplanar el array JSON 'products'
+    #         JOIN JSON_TABLE(
+    #             i.products, 
+    #             '$[*]' 
+    #             COLUMNS (
+    #                 -- Extrae el código (el campo de enlace)
+    #                 product_code_json VARCHAR(50) PATH '$.code', 
+    #                 -- Extrae la cantidad vendida
+    #                 quantity INT PATH '$.quantity',
+    #                 -- Extrae el valor del descuento
+    #                 discount INT PATH '$.discount',
+    #                 -- Extrae el precio
+    #                 price DECIMAL(10, 2) PATH '$.price'
+    #             )
+    #         ) AS p_data
             
-            -- 2. Une con la tabla 'products' usando el código extraído como enlace
-            JOIN products p ON p_data.product_code_json = p.id
+    #         -- 2. Une con la tabla 'products' usando el código extraído como enlace
+    #         JOIN products p ON p_data.product_code_json = p.id
             
-        WHERE 
-            -- Filtrar por datos recientes (ej: último año)
-            i.date >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR);
-        """
+    #     WHERE 
+    #         -- Filtrar por datos recientes (ej: último año)
+    #         i.date >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR);
+    #     """
         
-        # Carga los datos directamente en un DataFrame de Pandas
-        df = pd.read_sql(query, engine)
+    #     # Carga los datos directamente en un DataFrame de Pandas
+    #     df = pd.read_sql(query, engine)
         
-        # Verifica si hay datos
-        if df.empty:
-            print("ADVERTENCIA: La consulta no devolvió datos.")
-            return pd.DataFrame()
+    #     # Verifica si hay datos
+    #     if df.empty:
+    #         print("ADVERTENCIA: La consulta no devolvió datos.")
+    #         return pd.DataFrame()
 
-        # Conversión de tipos de datos (IMPORTANTE)
-        df['date_invoices'] = pd.to_datetime(df['date_invoices']) 
-        print(f"✅ Datos extraídos correctamente. Filas: {len(df)}")
+    #     # Conversión de tipos de datos (IMPORTANTE)
+    #     df['date_invoices'] = pd.to_datetime(df['date_invoices']) 
+    #     print(f"✅ Datos extraídos correctamente. Filas: {len(df)}")
         
-        return df
+    #     return df
 
-    except Exception as e:
-        print(f"❌ ERROR al conectar o consultar la DB: {e}")
-        # En caso de error, puedes optar por cargar el CSV de simulación si existe
-        # para probar la lógica sin la DB. (Descomenta las líneas de abajo para la simulación)
-        try:
-             df_sim = pd.read_csv("dataset/ventas_supermercado.csv", encoding="utf-8")
-             df_sim['date_invoices'] = pd.to_datetime(df_sim['date_invoices'])
-             print("Usando datos de simulación por error de DB.")
-             return df_sim
-        except FileNotFoundError:
-             return pd.DataFrame()
-        # return pd.DataFrame() # Retorna vacío si falla
+    # except Exception as e:
+    #     print(f"❌ ERROR al conectar o consultar la DB: {e}")
+    #     # En caso de error, puedes optar por cargar el CSV de simulación si existe
+    #     # para probar la lógica sin la DB. (Descomenta las líneas de abajo para la simulación)
+    #     try:
+    #          df_sim = pd.read_csv("dataset/ventas_supermercado.csv", encoding="utf-8")
+    #          df_sim['date_invoices'] = pd.to_datetime(df_sim['date_invoices'])
+    #          print("Usando datos de simulación por error de DB.")
+    #          return df_sim
+    #     except FileNotFoundError:
+    #          return pd.DataFrame()
+    #     # return pd.DataFrame() # Retorna vacío si falla
     
+    try:
+        df_sim = pd.read_csv("dataset/ventas_supermercado.csv", encoding="utf-8")
+        # Asumiendo que tu CSV tiene la columna 'date_invoices'
+        df_sim['date_invoices'] = pd.to_datetime(df_sim['date_invoices'])
+        print(f"✅ Datos de simulación cargados correctamente. Filas: {len(df_sim)}")
+        return df_sim
+    except FileNotFoundError:
+                print("❌ ERROR: El archivo ventas_supermercado.csv no se encontró.")
+    return pd.DataFrame()
+
 
 # --- 2. FUNCIÓN PRINCIPAL DE ENTRENAMIENTO (Para generar el modelo .joblib) ---
 def entrenar_y_guardar_modelo():
@@ -125,7 +135,7 @@ def entrenar_y_guardar_modelo():
     ).agg(
         # Sumamos las cantidades vendidas (Target)
         cantidad_vendida_diaria=('cantidad_vendida', 'sum'),
-        # FEATURE CLAVE: Calculamos el precio promedio del día 
+        # FEATURE CLAVE: Calculamos el precio promedio del día | IMPORTANTE cambiar a price cuando se conecte a la DB
         precio_promedio_diario=('precio', 'mean'), 
         # FEATURE OPCIONAL: Máximo de la promoción para el día (1 si hubo promoción)
         promocion_max=('promocion_activa', 'max'),

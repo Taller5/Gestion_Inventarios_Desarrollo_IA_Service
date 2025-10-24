@@ -6,6 +6,8 @@ import datetime
 import os
 import numpy as np
 from fastapi.middleware.cors import CORSMiddleware # 1. Importar el middleware
+from typing import List
+from calendar import monthrange
 
 
 # --- 1. Configuración Inicial y Carga del Modelo ---
@@ -49,6 +51,12 @@ class PrediccionInput(BaseModel):
     fecha_prediccion: datetime.date  # Formato YYYY-MM-DD
     precio_de_venta_esperado: float # Ahora es obligatorio
     promocion_activa: int # 0 o 1, obligatorio ya que el modelo fue entrenado con él
+
+class PrediccionAnualInput(BaseModel):
+    id_products: int
+    precio_de_venta_esperado: float
+    promocion_activa: int
+    anios: List[int]  # Lista de años, máximo 3
     
 # --- 3. Endpoint de Predicción ---
 @app.post("/predict_quantity")
@@ -93,4 +101,46 @@ def predecir_cantidad_vendida(data: PrediccionInput):
         # Esto te mostrará el error exacto de Pandas/Scikit-learn si hay otro problema
         raise HTTPException(status_code=500, detail=f"Error durante la predicción. Detalle: {str(e)}")
 
-# Para ejecutar el API: uvicorn main:app --reload
+@app.post("/predict_anual_quantity")
+def predecir_cantidad_anual(data: PrediccionAnualInput):
+    """
+    Predice la cantidad total vendida por mes para los años seleccionados (máx 3).
+    Devuelve una lista con {"mes": "YYYY-MM", "cantidad": total_predicho}
+    """
+    if MODELO_VENTAS is None:
+        raise HTTPException(status_code=503, detail="El modelo de predicción no está disponible. Ejecute el worker de entrenamiento.")
+
+    if not isinstance(data.anios, list) or len(data.anios) == 0 or len(data.anios) > 3:
+        raise HTTPException(status_code=400, detail="El campo 'años' debe ser una lista de 1 a 3 años.")
+
+    try:
+        resultados = []
+
+        for year in data.anios:
+            for month in range(1, 13):
+                dias_en_mes = monthrange(year, month)[1]
+                fechas_mes = [datetime.date(year, month, dia) for dia in range(1, dias_en_mes + 1)]
+
+                input_data = pd.DataFrame({
+                    'id_products': [data.id_products] * dias_en_mes,
+                    'dia_semana': [fecha.weekday() for fecha in fechas_mes],
+                    'mes': [month] * dias_en_mes,
+                    'trimestre': [(month - 1) // 3 + 1] * dias_en_mes,
+                    'precio_promedio_diario': [data.precio_de_venta_esperado] * dias_en_mes,
+                    'promocion_activa': [data.promocion_activa] * dias_en_mes,
+                })
+
+                predicciones = MODELO_VENTAS.predict(input_data)
+                total_mes = int(max(0, round(np.sum(predicciones))))
+
+                resultados.append({
+                    "mes": f"{year}-{month:02d}",
+                    "cantidad": total_mes
+                })
+
+        return resultados
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error durante la predicción anual. Detalle: {str(e)}")
+
+# Para ejecutar el API: uvicorn main:app --reload --port 8001
