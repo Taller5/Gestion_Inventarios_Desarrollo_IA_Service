@@ -15,7 +15,7 @@ app = FastAPI(title="API de Predicción de Ventas de Supermercado")
 
 # 2. Definir los orígenes permitidos
 # Permitimos localhost:5173 (tu frontend) y 127.0.0.1:8001 (FastAPI/Swagger)
-PRODUCTION_FRONTEND_URL = "https://gestion-inventarios-desarrollo-fron.vercel.app/"
+PRODUCTION_FRONTEND_URL = "https://gestion-inventarios-desarrollo-fron.vercel.app"
 
 origins = [
     "http://localhost:5173",  
